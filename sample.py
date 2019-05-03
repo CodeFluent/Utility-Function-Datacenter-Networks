@@ -33,10 +33,25 @@ Giapetto's Problem:
 '''
 
 
+# label the problem and choose finding maximum
+
+
+# %%
 from pulp import *
 import numpy
-
-
-# label the problem and choose finding maximum
 prob = LpProblem("Giapetto", LpMaximize)
 
+x1 = LpVariable("x1", lowBound=0, cat='Integer')  # Create a variable x1 >= 0
+# Create another variable x2 >= 0
+x2 = LpVariable("x2", lowBound=0, cat='Integer')
+prob += 20*x1 + 30*x2  # Objective function
+prob += 1*x1 + 2*x2 <= 100  # Finishing hours
+prob += 2*x1 + 1*x2 <= 100  # Carpentry hours
+prob  # Display the LP problem
+
+# %%
+status = prob.solve()  # Solve with the default solver
+LpStatus[status]  # Print the solution status
+
+# %%%
+value(x1), value(x2), value(prob.objective)  # Show the solution
