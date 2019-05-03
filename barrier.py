@@ -39,10 +39,10 @@ b /= (1.1 * max(abs(b)))
 # %%
 
 """
-Centering uses Newton's Centering Method. This part is from the example given by cvxopt library. 
-Our barrier function is simply the update of the x value towards an optimal solution.
+Centering uses Newton's Centering Method. This part is from the example given by cvxopt library.
+Our barrier function is simply the update of the x value towards an optimal solution. x is a double value here.
 
-We are given mu by the tolerance above. If any centering reaches close to mu we stop since that is close to the 
+We are given mu by the tolerance above. If any centering reaches close to mu we stop since that is close to the
 edge of non-feasible solutions and exterior to any optimal solution.
 """
 
@@ -58,14 +58,18 @@ def barrier():
     H = matrix(0.0, (n, n))  # Symmetrix matrix
 
     for iter in range(MAXITERS):
-        print(x)
         # get the gradient of the function
         d = (b - A*x) ** - 1
         g = A.T * d
 
+        # print(d[:, n*[0]].size)
+        # print(A.size)
+
+        """bug here: won't multiply of two matrix of same dimension. code is looking into another dimension?"""
         # get Hessian
-        # lower diaganol multiplied to constraint matrix
-        h = mul(d[:, n*[0]], A)
+        # lower diaganol multiplied to constraint matrix, n*[0] is first center x^t(0)
+        h = np.zeros(shape=(m, n))
+        np.matmul(d[:, n*[0]], A, h)
         # use the BLAS solver to get the symmetric matrix and get roots
         blas.syrk(h, H, trans='T')
 
