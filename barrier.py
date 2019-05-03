@@ -40,14 +40,14 @@ b /= (1.1 * max(abs(b)))
 
 """
 Centering uses Newton's Centering Method. This part is from the example given by cvxopt library. 
+Our barrier function is simply the update of the x value towards an optimal solution.
 
 We are given mu by the tolerance above. If any centering reaches close to mu we stop since that is close to the 
 edge of non-feasible solutions and exterior to any optimal solution.
-
 """
 
 
-def centering():
+def barrier():
 
     # variables kept same from cvxopt example
     MAXITERS = 100
@@ -91,11 +91,6 @@ def centering():
 
         # increment x by the step times the negative gradient otherwise
         x += step*v
-
-
-# %%
-def solve():
-    pass
 
 
 centering()
