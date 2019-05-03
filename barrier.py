@@ -93,4 +93,4 @@ def barrier():
         x += step*v
 
 
-centering()
+barrier()
