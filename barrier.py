@@ -3,6 +3,7 @@ from cvxopt import lapack, solvers, matrix, spdiag, log, div, normal, uniform, b
 from cvxopt.modeling import variable, op, max, min, sum
 from array import array
 from operator import mul
+from math import sqrt
 import numpy as np
 
 
@@ -29,7 +30,7 @@ TMU = np.zeros(shape=(m, n), dtype=int)  # a totally unimodular matrix of zeros
 A = matrix(np.array(TMU), tc='i')
 
 # b is our value that x can reach given constraints of A.
-b = uniform(m, n, 0, 1)
+b = uniform(m, 1)
 
 # Make x = 0 feasible for  barrier. A flow can be allocated 0 time in favor of antoher getting more time. b is always positive.
 b /= (1.1 * max(abs(b)))
@@ -38,7 +39,7 @@ b /= (1.1 * max(abs(b)))
 # %%
 
 """
-Centering uses Newton's Centering Method. This part is similar to the example given by cvxopt library. 
+Centering uses Newton's Centering Method. This part is from the example given by cvxopt library. 
 
 We are given mu by the tolerance above. If any centering reaches close to mu we stop since that is close to the 
 edge of non-feasible solutions and exterior to any optimal solution.
@@ -56,8 +57,8 @@ def centering():
     x = matrix(0.0, (n, 1))
     H = matrix(0.0, (n, n))  # Symmetrix matrix
 
-    for iter in xrange(MAXITERS):
-
+    for iter in range(MAXITERS):
+        print(x)
         # get the gradient of the function
         d = (b - A*x) ** - 1
         g = A.T * d
@@ -65,11 +66,36 @@ def centering():
         # get Hessian
         # lower diaganol multiplied to constraint matrix
         h = mul(d[:, n*[0]], A)
-        blas.syrk(h, H, trans='T')  # use the BLAS solver
+        # use the BLAS solver to get the symmetric matrix and get roots
+        blas.syrk(h, H, trans='T')
 
-    pass
+        # do Newton's step
+        v = -g  # g is our gradient
+        # LAPACK solves the matrix and gives us the tep value to transverse with
+        lapack.posv(H, v)
+
+        # Stop condition if exceeding tolerance
+        lam = blas.dot(g, v)
+        if sqrt(-lam) < mu:
+            return x  # return the orignal value if we're above tolerance
+
+        # Line search to go to optimal using ALPHA and BETA
+        y = mul(A * v, d)
+        step = 1.0
+        while 1 - step*max(y) < 0:
+            step *= BETA
+        while True:
+            if -sum(log(1 - step*y)) < (ALPHA * step * lam):
+                break
+            step *= BETA
+
+        # increment x by the step times the negative gradient otherwise
+        x += step*v
 
 
 # %%
 def solve():
     pass
+
+
+centering()
